@@ -438,6 +438,10 @@ main() {
 		# Strip one-or-more leading '#' so '## foo' renders as 'foo', not '# foo'.
 		sed -n '/^# NAME$/,/^$/s/^#\{1,\}[[:space:]]\{0,1\}//p' "$0"
 		;;
+	-*)
+		# A pacman-style flag, not an apc command: pass straight through.
+		pacman "$command" "${cmd_args[@]}"
+		;;
 	*)
 		# Not a command: treat it as a search term (apt-like default)
 		search_packages "$command" "${cmd_args[@]}"
