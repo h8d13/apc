@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: update-readme
+        name: regenerate readme Usage from aptac --help
+        entry: ./uprdme.sh
+        language: system
+        files: ^aptac$
+        pass_filenames: false

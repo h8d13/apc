@@ -32,3 +32,56 @@ some details:
 all your pacman settings are found in `/etc/pacman.conf`
 
 > originally made this for my friend @ModelCitizenPS3, who hates pacman syntax.
+
+======
+
+## Usage:
+
+```
+NAME
+  aptac - Wrapper for common pacman operations
+
+SYNOPSIS
+  aptac [GLOBAL_OPTIONS] <COMMAND> [OPTIONS]
+
+DESCRIPTION
+  aptac wraps common pacman operations for system package management.
+  Mirrors concepts from Debian (install/uninstall) with pacman syntax.
+  Options not listed below are passed through to the underlying tool.
+  Requires pacman, pacman-contrib, reflector, and elevation (sudo/doas/run0/su).
+
+GLOBAL OPTIONS
+  --no-color          Disable colored output
+
+COMMANDS
+  search PACKAGE [OPTIONS]        Search for packages (default command)
+      --local, -l                 Search installed packages
+
+  install PACKAGE                 Install a package from sync repos
+                                  Use "package-" to uninstall
+  uninstall PACKAGE [OPTIONS]     Uninstall a package
+      --no-deps                   Don't remove orphaned dependencies
+
+  list [OPTIONS]                  List packages (-Sl)
+      --local, -l                 List installed packages (-Q)
+
+  info PACKAGE [OPTIONS]          Show detailed package information (-Si)
+      --local, -l                 Query installed package (-Qi)
+
+  sync                            Force-sync package databases (-Syy)
+  upgrade                         Full system upgrade (-Syu)
+
+  check                           Check for available updates (checkupdates)
+  clean, sif                      Clean old packages from cache (paccache -r)
+
+  deps PACKAGE                    Show dependency tree (pactree)
+
+  mirrors [OPTIONS]               Update mirrorlist using reflector, then -Syy
+                                  (defaults: --protocol https --latest 20 --sort rate)
+      --dry-run                   Print mirrors without saving or syncing
+AUTHOR
+  (O) Eihdran L. <hadean-eon-dev@proton.me>
+
+SPDX-FileCopyrightText: 2026
+SPDX-License-Identifier: MIT
+```
