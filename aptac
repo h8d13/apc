@@ -328,7 +328,7 @@ main() {
 		remove_package "${cmd_args[0]}" "${cmd_args[@]:1}"
 		;;
 	-v | --version | version)
-		echo "aptac $VER_STRING - 0BSD" && echo ""
+		echo "aptac $VER_STRING : 0BSD" && echo ""
 		pacman -V
 		return 0
 		;;
