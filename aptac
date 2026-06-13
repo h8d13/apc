@@ -1,0 +1,359 @@
+#!/bin/bash
+#
+# NAME
+#   aptac - Wrapper for common pacman operations
+#
+# SYNOPSIS
+#   aptac [GLOBAL_OPTIONS] <COMMAND> [OPTIONS]
+#
+# DESCRIPTION
+#   aptac wraps common pacman operations for system package management.
+#   Mirrors concepts from Debian (install/uninstall) with pacman syntax.
+#   Options not listed below are passed through to the underlying tool.
+#   Requires pacman, pacman-contrib, reflector, and elevation (sudo/doas/run0/su).
+#
+# GLOBAL OPTIONS
+#   --no-color          Disable colored output
+#
+# COMMANDS
+#   search PACKAGE [OPTIONS]        Search for packages (default command)
+#       --local, -l                 Search installed packages
+#
+#   install PACKAGE                 Install a package from sync repos
+#                                   Use "package-" to uninstall
+#   uninstall PACKAGE [OPTIONS]     Uninstall a package
+#       --no-deps                   Don't remove orphaned dependencies
+#
+#   list [OPTIONS]                  List packages (-Sl)
+#       --local, -l                 List installed packages (-Q)
+#
+#   info PACKAGE [OPTIONS]          Show detailed package information (-Si)
+#       --local, -l                 Query installed package (-Qi)
+#
+#   sync                            Force-sync package databases (-Syy)
+#   upgrade                         Full system upgrade (-Syu)
+#
+#   check                           Check for available updates (checkupdates)
+#   clean, sif                      Clean old packages from cache (paccache -r)
+#
+#   deps PACKAGE                    Show dependency tree (pactree)
+#
+#   mirrors [OPTIONS]               Update mirrorlist using reflector, then -Syy
+#                                   (defaults: --protocol https --latest 20 --sort rate)
+#       --dry-run                   Print mirrors without saving or syncing
+# AUTHOR
+#   (O) Eihdran L. <hadean-eon-dev@proton.me>
+#
+# SPDX-FileCopyrightText: 2026
+# SPDX-License-Identifier: MIT
+
+set -e
+USE_COLOR=1
+ARROW="==>"
+
+# Color codes (only if USE_COLOR=1)
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+style() {
+	local text="$1"
+	local color="$2"
+	if [[ $USE_COLOR -eq 1 ]]; then
+		echo -e "${color}${text}${NC}"
+	else
+		echo "$text"
+	fi
+}
+
+op_a() {
+	local text="$1"
+	echo "$(style "$ARROW" "$GREEN") ${text}..."
+}
+
+# Elevation options (priority order)
+ELEVATE=""
+for cmd in sudo doas run0 su; do
+	if command -v "$cmd" &>/dev/null; then
+		ELEVATE="$cmd"
+		break
+	fi
+done
+
+# Elevation wrapper
+needs_elev() {
+	if [[ $EUID -eq 0 ]]; then
+		"$@"
+	elif [[ -z "$ELEVATE" ]]; then
+		echo "error: root required but no elevation tool found (sudo, doas, run0, su)" >&2
+		return 1
+	elif [[ "$ELEVATE" == "su" ]]; then
+		# su takes a command string, not argv like the others
+		su -c "$(printf '%q ' "$@")"
+	else
+		"$ELEVATE" "$@"
+	fi
+}
+
+# pacman-contrib operations
+check_updates() {
+	op_a 'checking updates'
+	local rc=0
+	checkupdates "$@" || rc=$?
+	# checkupdates exits 2 when there is nothing to do; 1 is a real error
+	if [[ $rc -eq 2 ]]; then
+		op_a 'system up to date'
+	elif [[ $rc -ne 0 ]]; then
+		return "$rc"
+	fi
+}
+
+clean_packages() {
+	op_a 'cleaning packages'
+	needs_elev paccache -r "$@"
+}
+
+show_dependencies() {
+	op_a 'showing deps'
+	pactree "$@"
+}
+
+# reflector operations
+sort_mirrors() {
+	local save="/etc/pacman.d/mirrorlist"
+	local dry_run=0
+	local extra=()
+
+	while [[ $# -gt 0 ]]; do
+		case "$1" in
+		--dry-run) dry_run=1 ;;
+		*) extra+=("$1") ;; # pass reflector's own flags through
+		esac
+		shift
+	done
+
+	# Defaults first so passed-through flags can override them
+	local cmd=("reflector" "--protocol" "https" "--latest" "20" "--sort" "rate" "${extra[@]}")
+
+	if [[ $dry_run -eq 1 ]]; then
+		op_a 'sorting mirrors with reflector (dry run)'
+		"${cmd[@]}"
+	else
+		op_a 'sorting mirrors with reflector'
+		needs_elev "${cmd[@]}" --save "$save"
+		# Fresh mirrorlist: force-refresh so older db timestamps aren't skipped
+		needs_elev pacman -Syy
+	fi
+}
+
+# Package listing
+list_packages() {
+	local flag local_list=0 extra=()
+
+	while [[ $# -gt 0 ]]; do
+		case "$1" in
+		--local | -l) local_list=1 ;;
+		*) extra+=("$1") ;; # pass pacman's own flags through
+		esac
+		shift
+	done
+
+	if [[ $local_list -eq 1 ]]; then
+		flag="-Q"
+		op_a 'listing installed packages'
+	else
+		flag="-Sl"
+		op_a 'listing sync packages'
+	fi
+
+	pacman "$flag" "${extra[@]}"
+}
+
+# Package search
+search_packages() {
+	local package="$1" flag local_search=0 extra=()
+	shift
+
+	while [[ $# -gt 0 ]]; do
+		case "$1" in
+		--local | -l) local_search=1 ;;
+		*) extra+=("$1") ;; # pass pacman's own flags through
+		esac
+		shift
+	done
+
+	if [[ $local_search -eq 1 ]]; then
+		flag="-Qs"
+		op_a "searching installed packages for $package"
+	else
+		flag="-Ss"
+		op_a "searching sync repos for $package"
+	fi
+
+	pacman "$flag" "${extra[@]}" "$package"
+}
+
+# Package inspection
+inspect_package() {
+	local package="$1" flag local_pkg=0 extra=()
+	shift
+
+	while [[ $# -gt 0 ]]; do
+		case "$1" in
+		--local | -l) local_pkg=1 ;;
+		*) extra+=("$1") ;; # pass pacman's own flags through
+		esac
+		shift
+	done
+
+	if [[ $local_pkg -eq 1 ]]; then
+		op_a "inspecting installed $package"
+		flag="-Qi"
+	else
+		op_a "inspecting sync $package"
+		flag="-Si"
+	fi
+
+	pacman "$flag" "${extra[@]}" "$package"
+}
+
+# Package installation
+install_package() {
+	local package="$1"
+	shift
+	op_a "installing $package"
+	needs_elev pacman -S "$@" "$package"
+}
+
+# Package removal
+remove_package() {
+	local package="$1" dependencies=1 extra=()
+	shift
+	while [[ $# -gt 0 ]]; do
+		case "$1" in
+		--no-deps) dependencies=0 ;;
+		*) extra+=("$1") ;; # pass pacman's own flags through
+		esac
+		shift
+	done
+	op_a "uninstalling $package"
+	local flag="-Rns"
+	[[ $dependencies -eq 0 ]] && flag="-R"
+	needs_elev pacman "$flag" "${extra[@]}" "$package"
+}
+
+show_help() {
+	sed -n '/^#[[:space:]]*NAME/,/^#[[:space:]]*SPDX-License/p' "$0" | sed 's/^#[[:space:]]\?//'
+}
+
+# Main function
+main() {
+	# Parse global options
+	while [[ $# -gt 0 ]]; do
+		case "$1" in
+		--no-color)
+			USE_COLOR=0
+			shift
+			;;
+		-h | --help)
+			show_help
+			return 0
+			;;
+		-*)
+			echo "error: Unknown option '$1'" >&2
+			echo "Try 'aptac --help' for usage information" >&2
+			return 1
+			;;
+		*)
+			break
+			;;
+		esac
+	done
+
+	# Get command and its arguments
+	local command="$1"
+	shift 2>/dev/null || true
+	local cmd_args=("$@")
+
+	if [[ -z "$command" ]]; then
+		show_help
+		return 0
+	fi
+
+	case "$command" in
+	mirrors)
+		sort_mirrors "${cmd_args[@]}"
+		;;
+	sync)
+		op_a 'syncing system'
+		needs_elev pacman -Syy "${cmd_args[@]}"
+		;;
+	upgrade)
+		op_a 'upgrading system'
+		needs_elev pacman -Syu "${cmd_args[@]}"
+		;;
+	check)
+		check_updates "${cmd_args[@]}"
+		;;
+	clean | sif)
+		clean_packages "${cmd_args[@]}"
+		;;
+	deps)
+		if [[ -z "${cmd_args[0]}" ]]; then
+			echo "error: deps requires a package name" >&2
+			return 1
+		fi
+		show_dependencies "${cmd_args[@]}"
+		;;
+	list)
+		list_packages "${cmd_args[@]}"
+		;;
+	search)
+		if [[ -z "${cmd_args[0]}" ]]; then
+			echo "error: search requires a package name" >&2
+			return 1
+		fi
+		search_packages "${cmd_args[0]}" "${cmd_args[@]:1}"
+		;;
+	info)
+		if [[ -z "${cmd_args[0]}" ]]; then
+			echo "error: info requires a package name" >&2
+			return 1
+		fi
+		inspect_package "${cmd_args[0]}" "${cmd_args[@]:1}"
+		;;
+	install)
+		if [[ -z "${cmd_args[0]}" ]]; then
+			echo "error: install requires a package name" >&2
+			return 1
+		fi
+		local pkg="${cmd_args[0]}"
+		# pkg- syntax means uninstall (like apt)
+		if [[ "$pkg" == *- ]]; then
+			remove_package "${pkg%-}" "${cmd_args[@]:1}"
+		else
+			install_package "$pkg" "${cmd_args[@]:1}"
+		fi
+		;;
+	uninstall)
+		if [[ -z "${cmd_args[0]}" ]]; then
+			echo "error: uninstall requires a package name" >&2
+			return 1
+		fi
+		remove_package "${cmd_args[0]}" "${cmd_args[@]:1}"
+		;;
+	help)
+		show_help
+		return 0
+		;;
+	*)
+		# Not a command: treat it as a search term (apt-like default)
+		search_packages "$command" "${cmd_args[@]}"
+		;;
+	esac
+}
+
+# Handle keyboard interrupt and errors
+trap 'echo "$(style "Interrupted by user" "$YELLOW")" >&2; exit 130' INT
+
+main "$@"
