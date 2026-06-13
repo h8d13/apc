@@ -1,5 +1,5 @@
 #!/bin/bash
-#
+# Made for my friend ModelCitizenPS3 who hates pacman
 ## Start help menu, auto generates to be mirrored in readme
 # NAME
 #   aptac - Wrapper for common pacman operations
