@@ -272,10 +272,10 @@ search_packages() {
 
 	if [[ $local_search -eq 1 ]]; then
 		flag="-Qs"
-		op_a "searching installed packages for $package"
+		op_a "[?] searching local packages for $package"
 	else
 		flag="-Ss"
-		op_a "searching sync repos for $package"
+		op_a "[?] searching sync repos for $package"
 	fi
 
 	pacman "$flag" "${extra[@]}" "$package"
