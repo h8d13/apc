@@ -61,6 +61,7 @@ DESCRIPTION
   aptac wraps common pacman operations for system package management.
   Mirrors concepts from Debian (install/uninstall) with pacman syntax.
   Options not listed below are passed through to the underlying tool.
+  This means thin syntax shim, not modifying existing behaviors.
   Requires pacman, pacman-contrib, reflector, and elevation (sudo/doas/run0/su).
 
 GLOBAL OPTIONS
