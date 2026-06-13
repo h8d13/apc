@@ -31,17 +31,17 @@
 #   info PACKAGE [OPTIONS]          Show detailed package information (-Si)
 #       --local, -l                 Query installed package (-Qi)
 #
+#   deps PACKAGE [OPTIONS]          Show dependency tree (pactree)
+#
 #   update                          Force-sync package databases (-Syy)
 #   upgrade                         Full system upgrade (-Syu)
 #
-#   check                           Check for available updates (checkupdates)
+#   check [OPTIONS]                 Check for available updates (checkupdates)
 #   clean, sif                      Clean old packages from cache (paccache -r)
 #
-#   deps PACKAGE                    Show dependency tree (pactree)
-#
 #   mirrors [OPTIONS]               Update mirrorlist using reflector, then -Syy
-#                                   (defaults: --protocol https --latest 20 --sort rate)
 #       --dry-run                   Print mirrors without saving or syncing
+#
 # AUTHOR
 #   (O) Eihdran L. <hadean-eon-dev@proton.me>
 #
