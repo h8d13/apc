@@ -22,6 +22,7 @@
 ## Start help menu, auto generates to be mirrored in readme
 # NAME
 #   aptac - Wrapper for common pacman operations
+#   Requires pacman, pacman-contrib, reflector.
 #
 # SYNOPSIS
 #   aptac [GLOBAL_OPTIONS] <COMMAND> [OPTIONS]
@@ -31,7 +32,6 @@
 #   Mirrors concepts from Debian (install/uninstall) with pacman syntax.
 #   Options not listed below are passed through to the underlying tool.
 #   This means thin syntax shim, not modifying existing behaviors.
-#   Requires pacman, pacman-contrib, reflector, and elevation (sudo/doas/run0/su).
 #
 # GLOBAL OPTIONS
 #   --no-color          Disable colored output

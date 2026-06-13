@@ -55,6 +55,7 @@ make sure that is in `$PATH` or install globally with `sudo` to `/usr/bin`
 ```
 NAME
   aptac - Wrapper for common pacman operations
+  Requires pacman, pacman-contrib, reflector.
 
 SYNOPSIS
   aptac [GLOBAL_OPTIONS] <COMMAND> [OPTIONS]
@@ -64,7 +65,6 @@ DESCRIPTION
   Mirrors concepts from Debian (install/uninstall) with pacman syntax.
   Options not listed below are passed through to the underlying tool.
   This means thin syntax shim, not modifying existing behaviors.
-  Requires pacman, pacman-contrib, reflector, and elevation (sudo/doas/run0/su).
 
 GLOBAL OPTIONS
   --no-color          Disable colored output
