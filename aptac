@@ -1,5 +1,6 @@
 #!/bin/bash
 #
+## Start help menu, auto generates to be mirrored in readme
 # NAME
 #   aptac - Wrapper for common pacman operations
 #
@@ -45,8 +46,8 @@
 # AUTHOR
 #   (O) Eihdran L. <hadean-eon-dev@proton.me>
 #
-# SPDX-FileCopyrightText: 2026
-# SPDX-License-Identifier: MIT
+## SPDX-FileCopyrightText: 2026
+# SPDX-License-Identifier: 0BSD
 
 set -e
 VER_STRING="0.0.1-1"
@@ -333,8 +334,9 @@ main() {
 		return 0
 		;;
 	'' | -h | --help | help)
-		# Help text is the header comment block: line 2 to the first blank line
-		sed -n '2,/^$/s/^#[[:space:]]\{0,1\}//p' "$0"
+		# Help text is the header comment block: line 2 to the first blank line.
+		# Strip one-or-more leading '#' so '## foo' renders as 'foo', not '# foo'.
+		sed -n '2,/^$/s/^#\{1,\}[[:space:]]\{0,1\}//p' "$0"
 		;;
 	*)
 		# Not a command: treat it as a search term (apt-like default)

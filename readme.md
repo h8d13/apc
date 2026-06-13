@@ -51,6 +51,7 @@ make sure that is in `$PATH` or install globally with `sudo` to `/usr/bin`
 ## usage:
 
 ```
+Start help menu, auto generates to be mirrored in readme
 NAME
   aptac - Wrapper for common pacman operations
 
@@ -97,5 +98,5 @@ AUTHOR
   (O) Eihdran L. <hadean-eon-dev@proton.me>
 
 SPDX-FileCopyrightText: 2026
-SPDX-License-Identifier: MIT
+SPDX-License-Identifier: 0BSD
 ```
