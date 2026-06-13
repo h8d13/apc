@@ -80,7 +80,7 @@
 # SPDX-License-Identifier: 0BSD
 
 set -e
-VER_STRING="0.0.1-1"
+VER_STRING="0.0.2-1"
 USE_COLOR=1
 ARROW="==>"
 
