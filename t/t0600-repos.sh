@@ -15,7 +15,7 @@ test_expect_success 'enabled and disabled repos are classified; options skipped'
 	[extra]
 	Include = x
 	EOF
-	aptac --no-color repos --config conf >out &&
+	apc --no-color repos --config conf >out &&
 	grep -q "\[core\] enabled" out &&
 	grep -q "\[extra\] enabled" out &&
 	grep -q "\[testing\] disabled" out &&
@@ -23,11 +23,11 @@ test_expect_success 'enabled and disabled repos are classified; options skipped'
 '
 
 test_expect_success 'unknown option is rejected' '
-	test_must_fail aptac repos --bogus
+	test_must_fail apc repos --bogus
 '
 
 test_expect_success 'unreadable config errors' '
-	test_must_fail aptac repos --config no/such/file
+	test_must_fail apc repos --config no/such/file
 '
 
 test_done

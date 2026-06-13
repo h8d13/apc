@@ -1,19 +1,19 @@
 #!/bin/sh
-# Minimal test harness for aptac, modeled on git's t/test-lib.sh (a small
+# Minimal test harness for apc, modeled on git's t/test-lib.sh (a small
 # subset). A test script sets test_description, sources this file, runs
 # test_expect_success blocks, and ends with test_done. Run from within t/.
 #
 # CI-ONLY. These tests run the REAL pacman/checkupdates/paccache/pactree/
 # reflector and really install/remove packages, refresh the files db, and
 # force-sync. Run them in the disposable CI container, never on a host. Each
-# real tool is fronted by a thin wrapper that logs its argv to $APTAC_CALLS and
+# real tool is fronted by a thin wrapper that logs its argv to $apc_CALLS and
 # then execs the real binary -- a tap for flag assertions, not a fake. See README.
 
-# Resolve paths (TEST_DIRECTORY = the t/ dir, APTAC = binary under test).
+# Resolve paths (TEST_DIRECTORY = the t/ dir, apc = binary under test).
 TEST_DIRECTORY=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-APTAC="${APTAC:-$TEST_DIRECTORY/../aptac}"
-if ! test -f "$APTAC"; then
-	echo "Bail out! aptac not found at $APTAC"
+apc="${apc:-$TEST_DIRECTORY/../apc}"
+if ! test -f "$apc"; then
+	echo "Bail out! apc not found at $apc"
 	exit 1
 fi
 
@@ -121,9 +121,9 @@ test_done() {
 TRASH_DIRECTORY="$TEST_DIRECTORY/trash directory.$(basename "$0" .sh)"
 rm -rf "$TRASH_DIRECTORY"
 mkdir -p "$TRASH_DIRECTORY/bin"
-APTAC_CALLS="$TRASH_DIRECTORY/calls"
-: >"$APTAC_CALLS"
-export APTAC_CALLS
+apc_CALLS="$TRASH_DIRECTORY/calls"
+: >"$apc_CALLS"
+export apc_CALLS
 
 # Front each real tool with a logger that records argv then execs the real
 # binary by absolute path (resolved now, before the wrapper dir shadows PATH).
@@ -132,7 +132,7 @@ for tool in pacman checkupdates paccache pactree reflector; do
 	test -n "$real" || continue
 	{
 		echo '#!/bin/sh'
-		echo "echo \"$tool \$*\" >>\"\$APTAC_CALLS\""
+		echo "echo \"$tool \$*\" >>\"\$apc_CALLS\""
 		echo "exec $real \"\$@\""
 	} >"$TRASH_DIRECTORY/bin/$tool"
 done
@@ -140,11 +140,11 @@ chmod +x "$TRASH_DIRECTORY/bin/"* 2>/dev/null || true
 PATH="$TRASH_DIRECTORY/bin:$PATH"
 export PATH
 
-# Test-facing helpers. reset_calls before an aptac call, then grep_call asserts
+# Test-facing helpers. reset_calls before an apc call, then grep_call asserts
 # which underlying command it issued. (The logger also records pacman calls the
-# test itself makes, so reset_calls right before the aptac under test.)
-aptac() { "$APTAC" "$@"; }
-reset_calls() { : >"$APTAC_CALLS"; }
-grep_call() { grep -F -- "$1" "$APTAC_CALLS"; }
+# test itself makes, so reset_calls right before the apc under test.)
+apc() { "$apc" "$@"; }
+reset_calls() { : >"$apc_CALLS"; }
+grep_call() { grep -F -- "$1" "$apc_CALLS"; }
 
 cd "$TRASH_DIRECTORY" || exit 1

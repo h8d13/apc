@@ -5,12 +5,12 @@ on:
   push:
     branches: [master]
     paths:
-      - 'aptac'
+      - 'apc'
       - 't/**'
       - '.github/workflows/tests.yml'
   pull_request:
     paths:
-      - 'aptac'
+      - 'apc'
       - 't/**'
       - '.github/workflows/tests.yml'
 

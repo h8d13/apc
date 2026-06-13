@@ -1,9 +1,14 @@
-on: [ push ]
 name: lints
-  paths:
-    - 'aptac'
+
+on:
+  push:
+    paths:
+      - 'apc'
+      - 'lint.sh'
+      - '.github/workflows/lint.yml'
+
 jobs:
-  pylint:
+  lint:
     runs-on: ubuntu-latest
     container:
       image: archlinux/archlinux:latest

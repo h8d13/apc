@@ -7,7 +7,7 @@ test_description='mirrors via reflector (dry-run only; the saving path rewrites
 
 test_expect_success 'dry-run runs reflector, prints mirrors, no save' '
 	reset_calls &&
-	aptac --no-color mirrors --dry-run >out &&
+	apc --no-color mirrors --dry-run >out &&
 	grep_call "reflector --protocol https --latest 20 --sort rate" &&
 	! grep_call "--save" &&
 	grep -q "^Server = " out
@@ -15,7 +15,7 @@ test_expect_success 'dry-run runs reflector, prints mirrors, no save' '
 
 test_expect_success 'passthrough flags are appended after the defaults' '
 	reset_calls &&
-	aptac --no-color mirrors --dry-run --country France >out &&
+	apc --no-color mirrors --dry-run --country France >out &&
 	grep_call "reflector --protocol https --latest 20 --sort rate --country France"
 '
 

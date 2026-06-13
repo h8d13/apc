@@ -6,19 +6,19 @@ test_description='deps'
 
 test_expect_success 'deps runs pactree on a real package' '
 	reset_calls &&
-	aptac --no-color deps bash >out &&
+	apc --no-color deps bash >out &&
 	grep_call "pactree bash" &&
 	grep -q bash out
 '
 
 test_expect_success 'deps passes flags through' '
 	reset_calls &&
-	aptac --no-color deps bash --depth 1 >out &&
+	apc --no-color deps bash --depth 1 >out &&
 	grep_call "pactree bash --depth 1"
 '
 
 test_expect_success 'deps with no package errors' '
-	test_must_fail aptac deps
+	test_must_fail apc deps
 '
 
 test_done

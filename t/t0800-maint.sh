@@ -6,13 +6,13 @@ test_description='clean and orphs'
 
 test_expect_success 'clean runs paccache -r' '
 	reset_calls &&
-	aptac --no-color clean >out &&
+	apc --no-color clean >out &&
 	grep_call "paccache -r"
 '
 
 test_expect_success 'clean passes flags through' '
 	reset_calls &&
-	aptac --no-color clean -k1 >out &&
+	apc --no-color clean -k1 >out &&
 	grep_call "paccache -r -k1"
 '
 
@@ -23,7 +23,7 @@ test_expect_success 'orphs with none reports nothing and skips removal' '
 		pacman -Rns --noconfirm $o || break
 	done &&
 	reset_calls &&
-	aptac --no-color orphs >out &&
+	apc --no-color orphs >out &&
 	grep -q "no orphans" out &&
 	! grep_call "pacman -Rns"
 '
@@ -34,7 +34,7 @@ test_expect_success 'orphs removes a real orphan (-Qdtq, then -Rns)' '
 	pacman -S --asdeps --noconfirm tree &&
 	test_when_finished "pacman -Rns --noconfirm tree 2>/dev/null || true" &&
 	reset_calls &&
-	aptac --no-color orphs --noconfirm >out &&
+	apc --no-color orphs --noconfirm >out &&
 	grep_call "pacman -Qdtq" &&
 	grep_call "pacman -Rns" &&
 	! pacman -Q tree

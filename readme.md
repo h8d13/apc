@@ -1,10 +1,10 @@
-# aptac
+# apc
 
 > mirror apt style commands for pacman
 
 notably my favorite detail:
 
-`./aptac install fastfetch-`
+`./apc install fastfetch-`
 
 which uninstalls note the `-`.
 
@@ -15,9 +15,9 @@ only rule is to modify syntax, not modify pacman behavior (too much).
 this means every arg **passes through** to the next tool:
 
 ```
-./aptac --help
+./apc --help
 
-./aptac search --help
+./apc search --help
 ```
 
 this second example will just get the pacman help. which already supports 50 flags.
@@ -42,7 +42,7 @@ cd <dest>
 
 can be installed to `~/.local/bin`:
 ```
-cp aptac ~/.local/bin
+cp apc ~/.local/bin
 ```
 make sure that is in `$PATH` or install globally with `sudo` to `/usr/bin`
 
@@ -52,14 +52,14 @@ make sure that is in `$PATH` or install globally with `sudo` to `/usr/bin`
 
 ```
 NAME
-  aptac - Wrapper for common pacman operations
+  apc - Wrapper for common pacman operations
   Requires pacman, pacman-contrib, reflector.
 
 SYNOPSIS
-  aptac [GLOBAL_OPTIONS] <COMMAND> [OPTIONS]
+  apc [GLOBAL_OPTIONS] <COMMAND> [OPTIONS]
 
 DESCRIPTION
-  aptac wraps common pacman operations for system package management.
+  apc wraps common pacman operations for system package management.
   Mirrors concepts from Debian (install/uninstall) with pacman syntax.
   Options not listed below are passed through to the underlying tool.
   This means thin syntax shim, not modifying existing behaviors.

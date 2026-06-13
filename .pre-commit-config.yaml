@@ -2,10 +2,10 @@ repos:
   - repo: local
     hooks:
       - id: update-readme
-        name: regenerate readme Usage from aptac --help
+        name: regenerate readme Usage from apc --help
         entry: ./uprdme.sh
         language: system
-        files: ^aptac$
+        files: ^apc$
         pass_filenames: false
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0

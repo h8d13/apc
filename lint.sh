@@ -1,5 +1,5 @@
 #!/bin/bash
-SCRIPT="./aptac"
+SCRIPT="./apc"
 TESTS_PASSED=0
 TESTS_FAILED=0
 
