@@ -1,10 +1,10 @@
 # apc
 
-> APC is a drop-in replacement for `pacman` but all args fall-through to underlying programs.
+> `apc` is a wrapper replacement for `pacman`.
 
 only rule is to modify syntax, not modify pacman behavior (too much).
 
-this means every arg **passes through** to the next tool:
+but all args **fall-through to underlying programs.**
 
 ```
 ./apc --help
