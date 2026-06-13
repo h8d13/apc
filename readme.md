@@ -84,6 +84,8 @@ COMMANDS
 
   deps PACKAGE [OPTIONS]          Show dependency tree (pactree)
 
+  repos [CONF]                    List repos from pacman.conf (enabled/disabled)
+
   update [OPTIONS]                Force-sync package databases (-Syy)
   upgrade [OPTIONS]               Full system upgrade (-Syu)
 

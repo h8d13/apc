@@ -53,6 +53,8 @@
 #
 #   deps PACKAGE [OPTIONS]          Show dependency tree (pactree)
 #
+#   repos [CONF]                    List repos from pacman.conf (enabled/disabled)
+#
 #   update [OPTIONS]                Force-sync package databases (-Syy)
 #   upgrade [OPTIONS]               Full system upgrade (-Syu)
 #
@@ -138,6 +140,25 @@ clean_packages() {
 show_dependencies() {
 	op_a 'showing deps'
 	pactree "$@"
+}
+
+# Repository overview from pacman.conf: bare [repo] enabled, #[repo] disabled.
+list_repos() {
+	local conf="${1:-/etc/pacman.conf}"
+	if [[ ! -r "$conf" ]]; then
+		echo "error: cannot read $conf" >&2
+		return 1
+	fi
+	op_a "reading repos from $conf"
+	while IFS= read -r line; do
+		if [[ "$line" =~ ^[[:space:]]*\[([^]]+)\][[:space:]]*$ ]]; then
+			[[ "${BASH_REMATCH[1]}" == options ]] && continue
+			style "  [${BASH_REMATCH[1]}] enabled" "$GREEN"
+		elif [[ "$line" =~ ^#\[([^]]+)\][[:space:]]*$ ]]; then
+			[[ "${BASH_REMATCH[1]}" == options ]] && continue
+			style "  [${BASH_REMATCH[1]}] disabled" "$YELLOW"
+		fi
+	done <"$conf"
 }
 
 # reflector operations
@@ -309,6 +330,9 @@ main() {
 			return 1
 		fi
 		show_dependencies "${cmd_args[@]}"
+		;;
+	repos)
+		list_repos "${cmd_args[@]}"
 		;;
 	list)
 		list_packages "${cmd_args[@]}"
