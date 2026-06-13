@@ -334,9 +334,10 @@ main() {
 		return 0
 		;;
 	'' | -h | --help | help)
-		# Help text is the header comment block: line 2 to the first blank line.
+		# Help text is the header comment block: '# NAME' to the first blank line.
+		# Anything above NAME (shebang, meta-comments) is excluded.
 		# Strip one-or-more leading '#' so '## foo' renders as 'foo', not '# foo'.
-		sed -n '2,/^$/s/^#\{1,\}[[:space:]]\{0,1\}//p' "$0"
+		sed -n '/^# NAME$/,/^$/s/^#\{1,\}[[:space:]]\{0,1\}//p' "$0"
 		;;
 	*)
 		# Not a command: treat it as a search term (apt-like default)
