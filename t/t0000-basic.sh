@@ -4,6 +4,10 @@ test_description='help, version, and default-command dispatch'
 
 . ./test-lib.sh
 
+# Read the version from the script instead of hardcoding it, so a bump doesn't
+# break the suite.
+ver=$(sed -n 's/^VER_STRING="\(.*\)"/\1/p' "$APTAC")
+
 test_expect_success 'no args prints the help block' '
 	aptac >out &&
 	grep -q "aptac - Wrapper for common pacman" out
@@ -18,14 +22,14 @@ test_expect_success 'help renders the synopsis and commands' '
 test_expect_success '--version prints version and runs pacman -V' '
 	reset_calls &&
 	aptac --version >out &&
-	grep -q "aptac 0.0.1-1" out &&
+	grep -q "aptac $ver" out &&
 	grep_call "pacman -V"
 '
 
 test_expect_success '-h and -v / version are aliases for help and version' '
 	aptac -h >out && grep -q "SYNOPSIS" out &&
-	aptac version >out && grep -q "aptac 0.0.1-1" out &&
-	aptac -v >out && grep -q "aptac 0.0.1-1" out
+	aptac version >out && grep -q "aptac $ver" out &&
+	aptac -v >out && grep -q "aptac $ver" out
 '
 
 test_expect_success 'unknown command falls back to search' '
