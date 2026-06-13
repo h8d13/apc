@@ -1,0 +1,62 @@
+name: release
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - 'PKGBUILD'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          fetch-depth: 0 # need existing tags to detect an unchanged version
+
+      - name: Read version from PKGBUILD
+        run: |
+          pkgver=$(sed -nE "s/^pkgver=['\"]?([^'\"]+)['\"]?.*/\1/p" PKGBUILD)
+          pkgrel=$(sed -nE "s/^pkgrel=['\"]?([^'\"]+)['\"]?.*/\1/p" PKGBUILD)
+          echo "FULL=${pkgver}-${pkgrel}" >> "$GITHUB_ENV"
+          echo "TAG=v${pkgver}-${pkgrel}" >> "$GITHUB_ENV"
+          echo "SHA=$(git rev-parse --short HEAD)" >> "$GITHUB_ENV"
+
+      # Tag carries pkgrel, so a -1 -> -2 bump is a new tag and releases. If the
+      # tag already exists, this PKGBUILD push changed something else -> skip.
+      - name: Gate on new version
+        id: gate
+        run: |
+          if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
+            echo "new=false" >> "$GITHUB_OUTPUT"
+            echo "Tag ${TAG} exists; version unchanged, skipping release."
+          else
+            echo "new=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build release archive
+        if: steps.gate.outputs.new == 'true'
+        run: |
+          STAGE="apc-${FULL}"
+          mkdir "/tmp/$STAGE"
+          cp -a "$GITHUB_WORKSPACE/." "/tmp/$STAGE"
+          rm -rf "/tmp/$STAGE/.git" "/tmp/$STAGE/.github" "/tmp/$STAGE/t" \
+                 "/tmp/$STAGE/.pre-commit-config.yaml"
+          # Stamp the shipped script so `apc --version` is correct straight from
+          # the tarball; the PKGBUILD then just installs it as-is.
+          sed -i "s/^VER_STRING=.*/VER_STRING=\"${FULL}\"/" "/tmp/$STAGE/apc"
+          # Asset name == apc-<pkgver>-<pkgrel>.tar.gz, the PKGBUILD's source.
+          tar -czf "/tmp/${STAGE}.tar.gz" -C /tmp "$STAGE"
+
+      - name: Publish tagged release
+        if: steps.gate.outputs.new == 'true'
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3
+        with:
+          tag_name: ${{ env.TAG }}
+          name: ${{ env.TAG }} (${{ env.SHA }})
+          make_latest: true
+          files: /tmp/apc-${{ env.FULL }}.tar.gz
