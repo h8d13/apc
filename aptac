@@ -37,34 +37,41 @@
 #   --no-color          Disable colored output
 #
 # COMMANDS
-#   search PACKAGE [OPTIONS]        Search for packages (default command)
-#       --local, -l                 Search installed packages
+#   search PACKAGE [OPTIONS]        Search for pkgs (default command)
+#       --local, -l                 Search installed pkgs
 #
-#   install PACKAGE [OPTIONS]       Install a package from sync repos
-#                                   Use "package-" to uninstall
-#   uninstall PACKAGE [OPTIONS]     Uninstall a package
+#   install PACKAGE [OPTIONS]       Install a pkg from sync repos
+#                                   Use "pkg-" to uninstall
+#   uninstall PACKAGE [OPTIONS]     Uninstall a pkg
 #       --no-deps                   Don't remove orphaned dependencies
 #
 #   list [OPTIONS]                  List packages (-Sl)
-#       --local, -l                 List installed packages (-Q)
+#       --local, -l                 List installed pkgs (-Q)
+#       --explicit, -e              List explicitly installed pkgs (-Qe)
+#       --files, -f PKG             List files owned by a pkg (-Ql)
+#       --why, -w PATH              Which installed pkg owns a file (-Qo)
+#       --last [N]                  N newest installed/updated pkgs by time (default 20)
+#       --first [N]                 N oldest installed/updated pkgs by time (default 20)
 #
-#   info PACKAGE [OPTIONS]          Show detailed package information (-Si)
-#       --local, -l                 Query installed package (-Qi)
+#   info PACKAGE [OPTIONS]          Show detailed pkg information (-Sii)
+#       --local, -l                 Query installed pkg (-Qii)
+#       --files, -f PKG             List files a pkg provides (-Fl)
+#       --why, -w PATH              Which sync pkg provides a file (-F)
 #
 #   deps PACKAGE [OPTIONS]          Show dependency tree (pactree)
 #
-#   repos [OPTIONS]                 List repos from pacman.conf (enabled/disabled)
-#       --config FILE               Read an alternate config (default /etc/pacman.conf)
-#
-#   update [OPTIONS]                Force-sync package databases (-Syy)
+#   update [OPTIONS]                Force-sync pkg databases (-Syy)
 #   upgrade [OPTIONS]               Full system upgrade (-Syu)
 #
 #   check [OPTIONS]                 Check for available updates (checkupdates)
-#   clean [OPTIONS]                 Clean old packages from cache (paccache -r)
+#   clean [OPTIONS]                 Clean old pkgs from cache (paccache -r)
 #   orphs [OPTIONS]                 Remove orphaned packages (-Qdtq, then -Rns)
 #
 #   mirrors [OPTIONS]               Update mirrorlist using reflector, then -Syy
 #       --dry-run                   Print mirrors without saving or syncing
+#
+#   repos [OPTIONS]                 List repos from pacman.conf (enabled/disabled)
+#       --config FILE               Read an alternate config (default /etc/pacman.conf)
 #
 # AUTHOR
 #   (O) Eihdran L. <hadean-eon-dev@proton.me>
@@ -217,26 +224,35 @@ sort_mirrors() {
 	fi
 }
 
-# Package listing
+PACMAN_LOCAL="/var/lib/pacman/local"
+
+# Package listing. Flags pick a query mode; last one wins. -Ql/-Qo take a
+# trailing argument (a pkg name / a file path) which arrives via extra.
+# --first/--last read install/upgrade order from local-db dir mtimes (like ls -t).
 list_packages() {
-	local flag local_list=0 extra=()
+	local flag="-Sl" msg='listing sync packages' extra=()
+	local order="" count=20
 
 	while [[ $# -gt 0 ]]; do
 		case "$1" in
-		--local | -l) local_list=1 ;;
-		*) extra+=("$1") ;; # pass pacman's own flags through
+		--local | -l) flag="-Q" msg='listing installed packages' ;;
+		--explicit | -e) flag="-Qe" msg='listing explicit packages' ;;
+		--files | -f) flag="-Ql" msg='listing files owned by package' ;;
+		--why | -w) flag="-Qo" msg='finding package that owns file' ;;
+		--last) order="-t" msg='listing newest installed packages' ;;
+		--first) order="-tr" msg='listing oldest installed packages' ;;
+		[0-9]*) count="$1" ;; # count for --first/--last
+		*) extra+=("$1") ;;   # pass pacman's own flags / the target through
 		esac
 		shift
 	done
 
-	if [[ $local_list -eq 1 ]]; then
-		flag="-Q"
-		op_a 'listing installed packages'
-	else
-		flag="-Sl"
-		op_a 'listing sync packages'
+	op_a "$msg"
+	if [[ -n "$order" ]]; then
+		# Pkg dirs are name-version-rel (always hyphenated); skips ALPM_DB_VERSION.
+		ls "$order" "$PACMAN_LOCAL" | grep -- - | head -n "$count"
+		return
 	fi
-
 	pacman "$flag" "${extra[@]}"
 }
 
@@ -264,28 +280,30 @@ search_packages() {
 	pacman "$flag" "${extra[@]}" "$package"
 }
 
-# Package inspection
+# Package inspection. Flags pick a mode; the target is a pkg name, except for
+# --why/-F where it is a file path. Parsed position-independently so the flag
+# may come before the target.
 inspect_package() {
-	local package="$1" flag local_pkg=0 extra=()
-	shift
+	local flag="-Sii" mode='inspecting sync' extra=() target="" files_db=0
 
 	while [[ $# -gt 0 ]]; do
 		case "$1" in
-		--local | -l) local_pkg=1 ;;
-		*) extra+=("$1") ;; # pass pacman's own flags through
+		--local | -l) flag="-Qii" mode='inspecting installed' ;;
+		--files | -f) flag="-Fl" mode='listing files provided by' files_db=1 ;;
+		--why | -w) flag="-F" mode='finding package providing' files_db=1 ;;
+		-*) extra+=("$1") ;; # pass pacman's own flags through
+		*) target="$1" ;;    # pkg name or file path
 		esac
 		shift
 	done
 
-	if [[ $local_pkg -eq 1 ]]; then
-		op_a "inspecting installed $package"
-		flag="-Qi"
-	else
-		op_a "inspecting sync $package"
-		flag="-Si"
+	# -F queries read the files database; refresh it first (writes db, needs root).
+	if [[ $files_db -eq 1 ]]; then
+		op_a 'syncing files database'
+		needs_elev pacman -Fy
 	fi
-
-	pacman "$flag" "${extra[@]}" "$package"
+	op_a "$mode $target"
+	pacman "$flag" "${extra[@]}" "$target"
 }
 
 # Package installation

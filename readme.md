@@ -68,34 +68,41 @@ GLOBAL OPTIONS
   --no-color          Disable colored output
 
 COMMANDS
-  search PACKAGE [OPTIONS]        Search for packages (default command)
-      --local, -l                 Search installed packages
+  search PACKAGE [OPTIONS]        Search for pkgs (default command)
+      --local, -l                 Search installed pkgs
 
-  install PACKAGE [OPTIONS]       Install a package from sync repos
-                                  Use "package-" to uninstall
-  uninstall PACKAGE [OPTIONS]     Uninstall a package
+  install PACKAGE [OPTIONS]       Install a pkg from sync repos
+                                  Use "pkg-" to uninstall
+  uninstall PACKAGE [OPTIONS]     Uninstall a pkg
       --no-deps                   Don't remove orphaned dependencies
 
   list [OPTIONS]                  List packages (-Sl)
-      --local, -l                 List installed packages (-Q)
+      --local, -l                 List installed pkgs (-Q)
+      --explicit, -e              List explicitly installed pkgs (-Qe)
+      --files, -f PKG             List files owned by a pkg (-Ql)
+      --why, -w PATH              Which installed pkg owns a file (-Qo)
+      --last [N]                  N newest installed/updated pkgs by time (default 20)
+      --first [N]                 N oldest installed/updated pkgs by time (default 20)
 
-  info PACKAGE [OPTIONS]          Show detailed package information (-Si)
-      --local, -l                 Query installed package (-Qi)
+  info PACKAGE [OPTIONS]          Show detailed pkg information (-Sii)
+      --local, -l                 Query installed pkg (-Qii)
+      --files, -f PKG             List files a pkg provides (-Fl)
+      --why, -w PATH              Which sync pkg provides a file (-F)
 
   deps PACKAGE [OPTIONS]          Show dependency tree (pactree)
 
-  repos [OPTIONS]                 List repos from pacman.conf (enabled/disabled)
-      --config FILE               Read an alternate config (default /etc/pacman.conf)
-
-  update [OPTIONS]                Force-sync package databases (-Syy)
+  update [OPTIONS]                Force-sync pkg databases (-Syy)
   upgrade [OPTIONS]               Full system upgrade (-Syu)
 
   check [OPTIONS]                 Check for available updates (checkupdates)
-  clean [OPTIONS]                 Clean old packages from cache (paccache -r)
+  clean [OPTIONS]                 Clean old pkgs from cache (paccache -r)
   orphs [OPTIONS]                 Remove orphaned packages (-Qdtq, then -Rns)
 
   mirrors [OPTIONS]               Update mirrorlist using reflector, then -Syy
       --dry-run                   Print mirrors without saving or syncing
+
+  repos [OPTIONS]                 List repos from pacman.conf (enabled/disabled)
+      --config FILE               Read an alternate config (default /etc/pacman.conf)
 
 AUTHOR
   (O) Eihdran L. <hadean-eon-dev@proton.me>
