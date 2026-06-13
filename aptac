@@ -20,7 +20,7 @@
 #   search PACKAGE [OPTIONS]        Search for packages (default command)
 #       --local, -l                 Search installed packages
 #
-#   install PACKAGE                 Install a package from sync repos
+#   install PACKAGE [OPTIONS]       Install a package from sync repos
 #                                   Use "package-" to uninstall
 #   uninstall PACKAGE [OPTIONS]     Uninstall a package
 #       --no-deps                   Don't remove orphaned dependencies
@@ -33,11 +33,11 @@
 #
 #   deps PACKAGE [OPTIONS]          Show dependency tree (pactree)
 #
-#   update                          Force-sync package databases (-Syy)
-#   upgrade                         Full system upgrade (-Syu)
+#   update [OPTIONS]                Force-sync package databases (-Syy)
+#   upgrade [OPTIONS]               Full system upgrade (-Syu)
 #
 #   check [OPTIONS]                 Check for available updates (checkupdates)
-#   clean, sif                      Clean old packages from cache (paccache -r)
+#   clean, sif [OPTIONS]            Clean old packages from cache (paccache -r)
 #
 #   mirrors [OPTIONS]               Update mirrorlist using reflector, then -Syy
 #       --dry-run                   Print mirrors without saving or syncing
