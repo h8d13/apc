@@ -124,6 +124,21 @@ APTAC_CALLS="$TRASH_DIRECTORY/calls"
 : >"$APTAC_CALLS"
 export APTAC_CALLS
 
+# A script that sets want_real=1 before sourcing runs against the REAL system
+# tools (no stubs). Those tests carry the REAL prereq, which only fires with an
+# explicit CI opt-in (APTAC_REAL_TESTS) AND root, since they mutate package
+# state. So a plain `sh run.sh` on a dev host SKIPs them.
+if test -n "$want_real"; then
+	if test -n "$APTAC_REAL_TESTS" && command -v pacman >/dev/null 2>&1 && test "$(id -u)" = 0; then
+		test_set_prereq REAL
+	fi
+	aptac() { "$APTAC" "$@"; }
+	reset_calls() { : >"$APTAC_CALLS"; }
+	grep_call() { grep -F -- "$1" "$APTAC_CALLS"; }
+	cd "$TRASH_DIRECTORY" || exit 1
+	return 0 2>/dev/null || true
+fi
+
 # Fake pacman: log argv; only the cases aptac READS back produce real output.
 #   STUB_ORPHANS    space-list returned for -Qdtq (empty => exit 1, like real)
 #   STUB_PACMAN_RC  exit code for everything else (default 0)

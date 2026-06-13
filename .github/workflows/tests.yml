@@ -32,6 +32,12 @@ jobs:
           pacman -Sy --noconfirm archlinux-keyring
           pacman -S --noconfirm --needed bash diffutils grep sed coreutils
 
+      # APTAC_REAL_TESTS enables the gated t1100 integration tests, which run
+      # real pacman against /var/lib/pacman/local (install a pkg, confirm it
+      # tops `list --last 1`). Root + this env are required, so they only ever
+      # fire here, never on a dev host running `sh t/run.sh`.
       - name: Run test suite
         shell: bash
+        env:
+          APTAC_REAL_TESTS: "1"
         run: sh t/run.sh

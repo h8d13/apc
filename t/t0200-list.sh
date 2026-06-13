@@ -34,6 +34,13 @@ test_expect_success '--why PATH finds owner (-Qo)' '
 	grep_call "pacman -Qo /bin/sh"
 '
 
+test_expect_success 'short aliases -l/-e/-f/-w match their long forms' '
+	reset_calls && aptac --no-color list -l >out && grep_call "pacman -Q" &&
+	reset_calls && aptac --no-color list -e >out && grep_call "pacman -Qe" &&
+	reset_calls && aptac --no-color list -f bash >out && grep_call "pacman -Ql bash" &&
+	reset_calls && aptac --no-color list -w /bin/sh >out && grep_call "pacman -Qo /bin/sh"
+'
+
 # --first/--last read local-db dir mtimes, not pacman. Build a fake db ordered
 # in time and point PACMAN_LOCAL at it. ALPM_DB_VERSION must be filtered out.
 test_expect_success 'set up a fake local db ordered by mtime' '

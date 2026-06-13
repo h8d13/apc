@@ -30,6 +30,12 @@ test_expect_success '--why PATH finds provider (-F), after -Fy refresh' '
 	grep_call "pacman -F /usr/bin/bash"
 '
 
+test_expect_success 'short aliases -l/-f/-w match their long forms' '
+	reset_calls && aptac --no-color info bash -l >out && grep_call "pacman -Qii bash" &&
+	reset_calls && aptac --no-color info bash -f >out && grep_call "pacman -Fl bash" &&
+	reset_calls && aptac --no-color info -w /usr/bin/bash >out && grep_call "pacman -F /usr/bin/bash"
+'
+
 test_expect_success 'plain info does not refresh files db' '
 	reset_calls &&
 	aptac --no-color info bash >out &&

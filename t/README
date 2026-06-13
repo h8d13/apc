@@ -23,3 +23,9 @@ Writing a test:
 Helpers: aptac, reset_calls, grep_call, test_must_fail, test_cmp,
 test_when_finished. Stub knobs (env): STUB_ORPHANS, STUB_UPDATES,
 STUB_CHECK_RC, STUB_PACMAN_RC. PACMAN_LOCAL points --first/--last at a fixture.
+
+Real integration (t1100): a script setting want_real=1 before sourcing runs
+against the actual system tools instead of stubs. Those tests carry the REAL
+prereq and only run with APTAC_REAL_TESTS=1 AND root (they really install/remove
+a package) -- CI sets this. Everywhere else they SKIP, so they never touch a dev
+host. To run them deliberately: APTAC_REAL_TESTS=1 sudo sh t/run.sh.

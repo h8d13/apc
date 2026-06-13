@@ -16,6 +16,12 @@ test_expect_success 'search installed (-Qs) via --local' '
 	grep_call "pacman -Qs firefox"
 '
 
+test_expect_success '-l is an alias for --local' '
+	reset_calls &&
+	aptac --no-color search firefox -l >out &&
+	grep_call "pacman -Qs firefox"
+'
+
 test_expect_success 'search is the default command' '
 	reset_calls &&
 	aptac --no-color firefox >out &&

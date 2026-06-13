@@ -23,9 +23,10 @@ test_expect_success 'orphs with none reports nothing and skips removal' '
 	! grep_call "pacman -Rns"
 '
 
-test_expect_success 'orphs removes the found orphans (-Rns)' '
+test_expect_success 'orphs removes the found orphans (-Qdtq, then -Rns)' '
 	reset_calls &&
 	( export STUB_ORPHANS="foo bar" && aptac --no-color orphs >out ) &&
+	grep_call "pacman -Qdtq" &&
 	grep_call "pacman -Rns foo bar"
 '
 

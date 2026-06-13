@@ -22,6 +22,12 @@ test_expect_success '--version prints version and pacman -V' '
 	grep_call "pacman -V"
 '
 
+test_expect_success '-h and -v / version are aliases for help and version' '
+	aptac -h >out && grep -q "SYNOPSIS" out &&
+	aptac version >out && grep -q "aptac 0.0.1-1" out &&
+	aptac -v >out && grep -q "aptac 0.0.1-1" out
+'
+
 test_expect_success 'unknown command falls back to search' '
 	reset_calls &&
 	aptac --no-color frobnicate >out &&
