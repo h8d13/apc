@@ -25,7 +25,7 @@ this second example will just get the pacman help.
 
 all dependencies are: `pacman`, `pacman-contrib`, `reflector`
 
-=======
+---
 
 ## some details:
 
@@ -46,7 +46,7 @@ cp aptac ~/.local/bin
 ```
 make sure that is in `$PATH` or install globally with `sudo` to `/usr/bin`
 
-======
+---
 
 ## usage:
 
