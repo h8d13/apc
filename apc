@@ -290,24 +290,21 @@ search_packages() {
 # --why/-F where it is a file path. Parsed position-independently so the flag
 # may come before the target.
 inspect_package() {
-	local flag="-Sii" mode='inspecting sync' extra=() target="" files_db=0
+	local flag="-Sii" mode='inspecting sync' extra=() target=""
 
 	while [[ $# -gt 0 ]]; do
 		case "${1}" in
 		--local | -l) flag="-Qii" mode='inspecting installed' ;;
-		--files | -f) flag="-Fl" mode='listing files provided by' files_db=1 ;;
-		--why | -w) flag="-F" mode='finding package providing' files_db=1 ;;
+		--files | -f) flag="-Fl" mode='listing files provided by' ;;
+		--why | -w) flag="-F" mode='finding package providing' ;;
 		-*) extra+=("${1}") ;; # pass pacman's own flags through
 		*) target="${1}" ;;    # pkg name or file path
 		esac
 		shift
 	done
 
-	# -F queries read the files database; refresh it first (writes db, needs root).
-	if [[ ${files_db} -eq 1 ]]; then
-		op_a 'syncing files database'
-		needs_elev pacman -Fy
-	fi
+	# -F/-Fl read the files database read-only (no root). Caller refreshes
+	# it themselves via `pacman -Fy` (needs root) when stale/missing.
 	op_a "${mode} ${target}"
 	pacman "${flag}" "${extra[@]}" "${target}"
 }
