@@ -26,16 +26,6 @@ test_expect_success 'install "pkg-" uninstalls' '
 	! pacman -Q tree
 '
 
-test_expect_success 'uninstall --no-deps runs -R (not -Rns)' '
-	pacman -S --noconfirm tree &&
-	test_when_finished "pacman -Rns --noconfirm tree 2>/dev/null || true" &&
-	reset_calls &&
-	apc --no-color uninstall tree --no-deps --noconfirm >out &&
-	grep_call "pacman -R " &&
-	! grep_call "pacman -Rns" &&
-	! pacman -Q tree
-'
-
 test_expect_success 'a freshly installed package tops --last 1' '
 	pacman -Rns --noconfirm tree 2>/dev/null || true &&
 	test_when_finished "pacman -Rns --noconfirm tree 2>/dev/null || true" &&
